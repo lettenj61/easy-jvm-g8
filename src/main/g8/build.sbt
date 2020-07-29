@@ -1,23 +1,32 @@
-lazy val scalaV = "$scalaVersion$"
+val repo = "$name;format="lower,hyphen"$"
 
-// Project information
-scalaVersion  := scalaV
-organization  := "$organization$"
-version       := "0.1.0-SNAPSHOT"
-name          := "$name$"
-description   := "$description$"
-
-scalacOptions in (Compile, compile) ++= Seq(
-  "-deprecation",
-  "-encoding", "UTF-8",
-  "-feature",
-  "-unchecked",
-  // "-Xfatal-warnings",
-  // "-Xlint",
-  // "-Yno-adapted-args",
-  // "-Ywarn-dead-code",
-  // "-Ywarn-numeric-widen",
-  // "-Ywarn-value-discard",
-  // "-Ywarn-unused-import",
-  // "-Ywarn-unused"
+lazy val commonSettings = Seq(
+  organization        := "$organization$",
+  crossScalaVersions  := Seq("$scalaVersion$", "2.12.12", "2.11.12"),
+  scalaVersion        := crossScalaVersions.value.head,
+  scalacOptions in (Compile, compile) := findScalacOptions(scalaVersion.value, scalacOptions.value)
 )
+
+// lazy val assemblySettings = Seq(
+//   test in assembly := {}
+// )
+
+def findScalacOptions(v: String, suggestions: Seq[String]): Seq[String] =
+  CrossVersion.partialVersion(v) match {
+    case Some((2, 13)) => Seq("-deprecation", "-encoding", "utf-8", "-feature", "-unchecked")
+    case _             => suggestions
+  }
+
+def workspace(moduleName: String) =
+  file("workspace/" + moduleName)
+
+lazy val root = project
+  .in(file("."))
+  .settings(commonSettings)
+  .settings(
+    publish       := {},
+    publishLocal  := {},
+    name          := s"$$repo-root"
+  )
+
+
